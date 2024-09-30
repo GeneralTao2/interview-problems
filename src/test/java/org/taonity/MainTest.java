@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Collections.singleton;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -244,6 +246,7 @@ public class MainTest {
         assertThat(nums).containsExactly(4, 1, 2, 3);
     }
 
+    // too much time
     public int maxProfit1(int[] prices) {
         int maxProfit = 0;
         for (int i=0; i<prices.length; i++) {
@@ -257,18 +260,189 @@ public class MainTest {
         return maxProfit;
     }
 
+    // wrong
     public int maxProfit2(int[] prices) {
-        List<Map.Entry<Integer, Integer>> datedPrice = new ArrayList<>(prices.length);
+        List<Map.Entry<Integer, Integer>> datedPrice = new ArrayList(prices.length);
         for (int i=0; i<prices.length; i++) {
             datedPrice.add(new AbstractMap.SimpleEntry<>(i, prices[i]));
         }
-        var minimumDatedPrice = datedPrice.get(0);
         datedPrice.sort(Map.Entry.comparingByValue());
+        var minimumDatedPrice = datedPrice.get(0);
         for(int i=datedPrice.size()-1; i>0; i--) {
             if(minimumDatedPrice.getKey() < datedPrice.get(i).getKey()) {
                 return  datedPrice.get(i).getValue() - minimumDatedPrice.getValue();
             }
         }
         return 0;
+    }
+
+    // looked at solution
+    public int maxProfit3(int[] prices) {
+        int buy = prices[0];
+        int profit = 0;
+        for (int i = 1; i < prices.length; i++) {
+            if (prices[i] < buy) {
+                buy = prices[i];
+            } else if (prices[i] - buy > profit) {
+                profit = prices[i] - buy;
+            }
+        }
+        return profit;
+    }
+
+    @Test
+    void testProfit() {
+        assertThat(maxProfit2(new int[] {2,4,1})).isEqualTo(2);
+        assertThat(maxProfit2(new int[] {7,1,5,3,6,4})).isEqualTo(5);
+    }
+
+    public int maxProfit21(int[] prices) {
+        int max = 0;
+        int start = prices[0];
+        int len = prices.length;
+        for(int i = 1;i<len; i++){
+            if(start < prices[i]) max += prices[i] - start;
+            start = prices[i];
+        }
+        return max;
+    }
+
+    @Test
+    void maxProfit21() {
+        assertThat(maxProfit21(new int[] {1, 2, 100, 101})).isEqualTo(100);
+    }
+
+    public boolean canJump(int[] nums) {
+        int length = nums.length;
+        int i=length-1;
+        int lastJumpIndex = length - 1;
+        while(i>=0) {
+            while (i>=0) {
+                if(nums[i] >= lastJumpIndex - i) {
+                    lastJumpIndex = i;
+                }
+                i--;
+            }
+        }
+        return nums[0] >= lastJumpIndex;
+    }
+
+    @Test
+    void testCanJump() {
+        assertThat(canJump(new int[] {3,2,1,0,4})).isFalse();
+    }
+
+    public int jump(int[] nums) {
+        int length = nums.length;
+        int count = 0;
+        for (int i=length-1; i>0;) {
+            int maxJump = 0;
+            for (int j=i; j>=0; j--) {
+                if(nums[j] >= i - j) {
+                    maxJump = j;
+                }
+            }
+            i=maxJump;
+            count++;
+        }
+
+        return count;
+    }
+
+    @Test
+    void testJump() {
+        assertThat(jump(new int[] {2,3,1,1,4})).isEqualTo(2);
+    }
+
+    public int hIndex(int[] citations) {
+        Arrays.sort(citations);
+        int hIndex = 0;
+        for (int i=citations.length - 1; i>=0; i--) {
+            int supposedHIndex = citations.length - i;
+            if(citations[i] >= supposedHIndex && supposedHIndex > hIndex) {
+                hIndex = supposedHIndex;
+            }
+        }
+        return hIndex;
+    }
+
+    class RandomizedSet {
+        final List<Integer> array = new ArrayList<>();
+        static final Random rand = new Random();
+
+        public RandomizedSet() {
+
+        }
+
+        public boolean insert(int val) {
+            boolean isPresent = array.contains(val);
+            array.add(val);
+            return !isPresent;
+        }
+
+        public boolean remove(int val) {
+            return array.remove(Integer.valueOf(val));
+        }
+
+        public int getRandom() {
+            return array.get(rand.nextInt(array.size()));
+        }
+    }
+
+    @Test
+    void testArrayList() {
+        List<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        System.out.println(list.size());
+        list.remove(1);
+        System.out.println(list.size());
+        System.out.println(list.get(0));
+        System.out.println(list.get(1));
+        System.out.println(list.get(2));
+    }
+
+    @Test
+    void testRandomisedSet() {
+        RandomizedSet randomizedSet = new RandomizedSet();
+        assertThat(randomizedSet.insert(1)).isTrue(); // Inserts 1 to the set. Returns true as 1 was inserted successfully.
+        assertThat(randomizedSet.remove(2)).isFalse(); // Returns false as 2 does not exist in the set.
+        assertThat(randomizedSet.insert(2)).isTrue(); // Inserts 2 to the set, returns true. Set now contains [1,2].
+        assertThat(randomizedSet.getRandom()).satisfiesAnyOf(
+                it -> assertThat(it).isEqualTo(1),
+                it -> assertThat(it).isEqualTo(2)
+        ); // getRandom() should return either 1 or 2 randomly.
+        assertThat(randomizedSet.remove(1)).isTrue(); // Removes 1 from the set, returns true. Set now contains [2].
+        assertThat(randomizedSet.insert(2)).isFalse(); // 2 was already in the set, so return false.
+        assertThat(randomizedSet.getRandom()).isEqualTo(2); // Since 2 is the only number in the set, getRandom() will always return 2.
+    }
+
+    public int[] productExceptSelf(int[] nums) {
+        int zeroCount = 0;
+        int allProduct = 1;
+        int nonZeroProduct = 1;
+        for (int num : nums) {
+            allProduct *= num;
+            if (num == 0) {
+                zeroCount++;
+            } else {
+                nonZeroProduct *= num;
+            }
+        }
+
+        for (int i=0; i<nums.length; i++) {
+            if(nums[i] == 0) {
+                if (zeroCount > 1) {
+                    nums[i] = 0;
+                } else {
+                    nums[i] = nonZeroProduct;
+                }
+            } else {
+                nums[i] = allProduct / nums[i];
+            }
+        }
+
+        return nums;
     }
 }
