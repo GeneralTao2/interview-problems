@@ -445,4 +445,55 @@ public class MainTest {
 
         return nums;
     }
+
+
+
+    // time limit exceeded
+    public int canCompleteCircuit1(int[] gas, int[] cost) {
+        int length = gas.length;
+        for (int i = 0; i < length; i++) {
+            int tank = 0;
+            for (int j = 0; j < length; j++) {
+                int shiftedIndex;
+                if (j + i < length) {
+                    shiftedIndex = j + i;
+                } else {
+                    shiftedIndex =  (j + i) - length;
+                }
+                tank += gas[shiftedIndex] - cost[shiftedIndex];
+                if (tank < 0) {
+                    break;
+                } else if (j == length - 1) {
+                    if (tank >= 0) {
+                        return i;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    public int canCompleteCircuit2(int[] gas, int[] cost) {
+        int n = gas.length;
+        int total_surplus = 0;
+        int surplus = 0;
+        int start = 0;
+
+        for(int i = 0; i < n; i++){
+            total_surplus += gas[i] - cost[i];
+            surplus += gas[i] - cost[i];
+            if(surplus < 0){
+                surplus = 0;
+                start = i + 1;
+            }
+        }
+        return (total_surplus < 0) ? -1 : start;
+    }
+
+    @Test
+    void testCanCompleteCircuit() {
+        assertThat(canCompleteCircuit1(new int[] {1,2,3,4,5,5,70}, new int[] {2,3,4,3,9,6,2})).isEqualTo(6);
+    }
 }
