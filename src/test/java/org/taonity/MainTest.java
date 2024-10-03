@@ -496,4 +496,80 @@ public class MainTest {
     void testCanCompleteCircuit() {
         assertThat(canCompleteCircuit1(new int[] {1,2,3,4,5,5,70}, new int[] {2,3,4,3,9,6,2})).isEqualTo(6);
     }
+
+
+    // FAIL
+    public int candy1(int[] ratings) {
+        int minRating = -1;
+        int minRatingIndex = 0;
+        for (int i=0; i<ratings.length; i++) {
+            if (ratings[i] < minRating) {
+                minRating = ratings[i];
+                minRatingIndex = i;
+            }
+        }
+
+        int[] optimisedRatings = new int[ratings.length];
+        for (int i=0; i<ratings.length; i++) {
+            optimisedRatings[i] = ratings[i] - minRating;
+        }
+
+        for (int i=minRatingIndex - 1; i>=0; i--) {
+            if (i-1 < 0) {
+                if (ratings[i] > minRatingIndex);
+            } else {
+                int countDescSteps = 0;
+                while (i >= 0 && ratings[i] > ratings[i-1]) {
+                    countDescSteps++;
+                    i--;
+                }
+                for (int j=i+1, r=1; j<i+countDescSteps; j++, r++) {
+                    optimisedRatings[j] = r;
+                }
+                if (ratings[i] > ratings[i+1]) {
+                    optimisedRatings[i] = ratings[i+1] + 1;
+                }
+                if (ratings[i] > ratings[i-1]) {
+                    optimisedRatings[i] = ratings[i-1] + 1;
+                }
+            }
+        }
+        return 1;
+    }
+
+    public int candy(int[] ratings) {
+        int n = ratings.length;
+        int ans = 0;
+        int[] candy = new int[n];
+
+        // Initialize each child with 1 candy
+        for (int i = 0; i < n; i++) {
+            candy[i] = 1;
+        }
+
+        // Left to right pass
+        for (int i = 1; i < n; i++) {
+            if (ratings[i] > ratings[i - 1]) {
+                candy[i] = candy[i - 1] + 1;
+            }
+        }
+
+        // Right to left pass and summing
+        for (int i = n - 2; i >= 0; i--) {
+            if (ratings[i] > ratings[i + 1]) {
+                candy[i] = Math.max(candy[i], candy[i + 1] + 1);
+            }
+            ans += candy[i];
+        }
+
+        // Add the last child's candy
+        ans += candy[n - 1];
+
+        return ans;
+    }
+
+    @Test
+    void testCandy() {
+        assertThat(candy(new int[] {2,8,10,5,1})).isEqualTo(9);
+    }
 }
