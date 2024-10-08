@@ -4,10 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.util.Collections.singleton;
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -571,5 +567,77 @@ public class MainTest {
     @Test
     void testCandy() {
         assertThat(candy(new int[] {2,8,10,5,1})).isEqualTo(9);
+    }
+
+    public String convert1(String s, int numRows) {
+        int length = s.length();
+        char[] zs = new char[length];
+        int k = numRows*2 - 2;
+        int i;
+        int c=0;
+        if (numRows == 1) {
+            return s;
+        }
+        int topLayerSpikes = (int) Math.ceil( (double) length/k);
+        for (i=0; i < topLayerSpikes; i++) {
+            zs[c++] = s.charAt(i*k);
+        }
+        for (i=1; i < numRows - 1; i++) {
+            for (int j=0; j < topLayerSpikes; j++) {
+                int n1i = j*k + i;
+                if (n1i < length) {
+                    zs[c++] = s.charAt(n1i);
+
+                }
+                int n2i = j*k + i + (numRows - i - 1)*2;
+                if (n2i < length) {
+                    zs[c++] = s.charAt(n2i);
+                }
+            }
+        }
+
+        int botLayerSpikes = length/k + (length%k >= numRows ? 1 : 0);
+        for (i=0; i < botLayerSpikes; i++) {
+            zs[c++] = s.charAt(i*k + numRows - 1);
+        }
+
+        return String.valueOf(zs);
+    }
+
+    public String convert2(String s, int numRows) {
+        if (numRows == 1 || numRows >= s.length()) {
+            return s;
+        }
+
+        int idx = 0, d = 1;
+        List<Character>[] rows = new ArrayList[numRows];
+        for (int i = 0; i < numRows; i++) {
+            rows[i] = new ArrayList<>();
+        }
+
+        for (char c : s.toCharArray()) {
+            rows[idx].add(c);
+            if (idx == 0) {
+                d = 1;
+            } else if (idx == numRows - 1) {
+                d = -1;
+            }
+            idx += d;
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (List<Character> row : rows) {
+            for (char c : row) {
+                result.append(c);
+            }
+        }
+
+        return result.toString();
+    }
+
+    @Test
+    void testConvert() {
+        assertThat(convert1("PAYPALISHIRING", 3)).isEqualTo("PAHNAPLSIIGYIR");
+//        assertThat(convert1("PAYPALISHIRING", 4)).isEqualTo("PINALSIGYAHRPI");
     }
 }
